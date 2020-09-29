@@ -1,0 +1,10 @@
+# Editor directories and files
+.DS_Store
+.idea
+.vscode
+
+# dotenv environment variables file
+.env
+
+# dist
+node_modules

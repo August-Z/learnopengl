@@ -6,13 +6,18 @@ set(CMAKE_CXX_STANDARD 17)
 file(
     GLOB sources
     "main.cpp"
-    "glad.c"
+    "src/*"
+    "shader/*"
 )
 
-find_package(glfw3 REQUIRED)
+# 查询 GLFW
+find_package(glfw3 3.2 REQUIRED)
 
+# 指定头文件
 include_directories(/usr/local/include)
 
-add_executable(learnopengl ${sources})
+link_libraries(/usr/local/lib)
+
+add_executable(learnopengl ${sources} src/GLShader.cpp src/GLShader.h main.h)
 
 target_link_libraries(learnopengl glfw)
