@@ -1,13 +1,13 @@
 #include <iostream>
 #include "main.h"
-#include "src/GLShader.h"
+#include "src/Shader.h"
 
-const GLuint VIEWPORT_WIDTH = 1280;
-const GLuint VIEWPORT_HEIGHT = 720;
+const GLuint VIEWPORT_WIDTH = 800;
+const GLuint VIEWPORT_HEIGHT = 600;
 
 // cmake-debug 路径在单独的文件夹中
-const char *vertShaderFilePath = "../shader/vertex.glsl";
-const char *fragShaderFilePath = "../shader/fragment.glsl";
+const char *vertShaderFilePath = "../shader/triangle.vert";
+const char *fragShaderFilePath = "../shader/triangle.frag";
 
 void initGLFW() {
     glfwInit();
@@ -48,29 +48,19 @@ int main() {
         return -1;
     }
 
-    GLuint shaderProgram = LoadShader(vertShaderFilePath, fragShaderFilePath);
+    Shader ourShader(vertShaderFilePath, fragShaderFilePath);
 
     // 顶点数据
     float vertices[] = {
-            0.0f, 1.0f, 0.0f, // A0
-            -1.0f, 0.0f, 0.0f, // A1
-            0.0f, -1.0f, 0.0f, // A2
-            1.0f, 0.0f, 0.0f, // A3
-            -0.5f, 0.5f, 0.0f, // B0
-            -0.5f, -0.5f, 0.0f, // B1
-            0.5f, -0.5f, 0.0f, // B2
-            0.5f, 0.5f, 0.0f, // B3
-            0.0f, 0.0f, 0.0f, // O
+            // positions         // colors
+            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom right
+            -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // bottom left
+            0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // top
     };
     unsigned int indices[] = {
-            0, 4, 7,
-            1, 4, 5,
-            2, 5, 6,
-            3, 6, 7,
-            4, 7, 8,
-            4, 5, 8,
-            6, 5, 8,
-            6, 7, 8
+            0, 1, 2,
+            1, 1, 2,
+            2, 0, 2
     };
     const unsigned int ELEMENTS_SIZE = sizeof(indices) / sizeof(unsigned int);
 
@@ -95,8 +85,13 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) nullptr);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) nullptr);
     glEnableVertexAttribArray(0);
+
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -106,6 +101,9 @@ int main() {
     glBindVertexArray(0);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    float timeValue, opacity;
+    float xOffset = 0.0f;
     while (!glfwWindowShouldClose(window)) {
         // input
         processInput(window);
@@ -113,8 +111,12 @@ int main() {
         // rendering
         render();
 
+        // update uniform color
+        timeValue = glfwGetTime();
+        opacity = (float) abs(sin(timeValue));
+
         // draw Triangle
-        glUseProgram(shaderProgram);
+        ourShader.use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, ELEMENTS_SIZE, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
@@ -127,7 +129,7 @@ int main() {
     // 退出程序时需要把所持有的资源释放
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(ourShader.ID);
     glfwTerminate();
     return 0;
 }

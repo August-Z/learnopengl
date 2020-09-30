@@ -18,6 +18,6 @@ include_directories(/usr/local/include)
 
 link_libraries(/usr/local/lib)
 
-add_executable(learnopengl ${sources} src/GLShader.cpp src/GLShader.h main.h)
+add_executable(learnopengl ${sources} main.h src/Shader.cpp src/Shader.h)
 
 target_link_libraries(learnopengl glfw)
